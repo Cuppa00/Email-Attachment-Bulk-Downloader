@@ -1,51 +1,71 @@
-from imap_tools import MailBox
-from pathlib import Path
+from tkinter import *
+from tkinter import ttk, messagebox
 
-DOWNLOAD_DIR = Path("attachments")      # Download directory of attachments
-DOWNLOAD_DIR.mkdir(exist_ok=True)       # Create directory
+import imap_tools
+from imap_tools import MailBox, AND
 
-MAIL_USERNAME = ""      # Email username
-MAIL_PASSWORD = ""      # Email APP password
-
-TARGET_FOLDER = ""      # Target email folder
+IMAP_SERVER = "imap.gmail.com"
 
 
-# Function to prevent duplicate filenames
-def get_unique_path(directory: Path, filename: str) -> Path:
-    base = Path(filename).stem
-    suffix = Path(filename).suffix
+class EABD:
+    def __init__(self, root):
+        icon = PhotoImage(file='ico.png')
 
-    candidate = directory / filename
-    counter = 1
+        self.root = root
+        self.root.iconphoto(False, icon)
+        self.root.title("Email Attachment Bulk Downloader")
 
-    while candidate.exists():
-        candidate = directory / f"{base} ({counter}){suffix}"
-        counter += 1
+        self.mailbox = None
+        self.username_entry = None
+        self.password_entry = None
 
-    return candidate
+        self.login_screen()
 
+    # ------------------------------ LOGIN SCREEN ------------------------------ #
+    def login_screen(self):
+        self.root.title("Login")
+        self.root.geometry("215x149")
+        self.root.resizable(False, False)
 
-# Email attachment downloader
-def download_attachments():
-    with MailBox("imap.gmail.com").login(MAIL_USERNAME, MAIL_PASSWORD) as mb:
-        mb.folder.set(TARGET_FOLDER)
+        # Padding configuration
+        PAD_X = 15
+        PAD_Y = 5
 
-        for msg in mb.fetch():
-            for att in msg.attachments:
-                if not att.filename:
-                    continue  # skip unnamed attachments
-                if att.content_disposition == 'inline':
-                    continue
+        # Username label and entry
+        username_label = Label(self.root, text="Username:")
+        username_label.grid(row=0, column=0, sticky="w", padx=PAD_X, pady=(PAD_Y, 0))
 
-                file_path = get_unique_path(DOWNLOAD_DIR, att.filename)
+        self.username_entry = Entry(self.root, width=30)
+        self.username_entry.grid(row=1, column=0, padx=PAD_X, pady=(0, PAD_Y))
 
-                with open(file_path, 'wb') as f:
-                    f.write(att.payload)
+        # Password label and entry
+        password_label = Label(self.root, text="Password:")
+        password_label.grid(row=2, column=0, sticky="w", padx=PAD_X, pady=(PAD_Y, 0))
 
+        self.password_entry = Entry(self.root, width=30, show="*")
+        self.password_entry.grid(row=3, column=0, padx=PAD_X, pady=(0, PAD_Y))
 
-def main():
-    download_attachments()
+        # Submit button
+        submit_button = Button(self.root, text="Submit", command=self.attempt_login)
+        submit_button.grid(row=4, column=0, pady=(10, PAD_Y))
+
+    def attempt_login(self):
+        try:
+            self.mailbox = MailBox(IMAP_SERVER).login(
+                self.username_entry.get(),
+                self.password_entry.get()
+            )
+            self.show_main_screen()
+        except imap_tools.errors.MailboxLoginError:
+            print(self.username_entry.get())
+            messagebox.showerror("Login Failed", "Invalid username or password")
+
+    # ------------------------------ LOGIN SCREEN ------------------------------ #
+    def show_main_screen(self):
+        return
 
 
 if __name__ == "__main__":
-    main()
+    screen = Tk()
+    EABD(screen)
+    screen.mainloop()
