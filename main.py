@@ -1,13 +1,13 @@
 from imap_tools import MailBox
 from pathlib import Path
 
-DOWNLOAD_DIR = Path("attachments")
-DOWNLOAD_DIR.mkdir(exist_ok=True)
+DOWNLOAD_DIR = Path("attachments")      # Download directory of attachments
+DOWNLOAD_DIR.mkdir(exist_ok=True)       # Create directory
 
-MAIL_USERNAME = ""
-MAIL_PASSWORD = ""
+MAIL_USERNAME = ""      # Email username
+MAIL_PASSWORD = ""      # Email APP password
 
-TARGET_FOLDER = ""
+TARGET_FOLDER = ""      # Target email folder
 
 
 # Function to prevent duplicate filenames
